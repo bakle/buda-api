@@ -1,0 +1,16 @@
+{
+    "name": "bakle/buda-api",
+    "description": "PHP library for buda.com API",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bashir Akle",
+            "email": "bashir.akle@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.3"
+    }
+}
