@@ -12,7 +12,7 @@ class BudaMock
      * @return MarketResponse
      * @throws BudaException
      */
-    public function getMarket(string $market): MarketResponse
+    public function getTickerMarket(string $market): MarketResponse
     {
         if ($market === 'fail-market') {
             throw new BudaException('{"message":"Not found","code":"not_found"}');

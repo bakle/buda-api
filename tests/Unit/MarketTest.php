@@ -13,7 +13,7 @@ class MarketTest extends TestCase
     {
         $buda = new BudaMock();
 
-        $response = $buda->getMarket('eth-btc');
+        $response = $buda->getTickerMarket('eth-btc');
 
         $this->assertEquals('ETH-BTC', $response->data()->id());
         $this->assertEquals(['0.02537093', 'BTC'], $response->data()->lastPrice());
@@ -31,6 +31,6 @@ class MarketTest extends TestCase
 
         $buda = new BudaMock();
 
-        $buda->getMarket('fail-market');
+        $buda->getTickerMarket('fail-market');
     }
 }

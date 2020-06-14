@@ -32,7 +32,7 @@ class Buda
      * @throws BudaException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getMarket(string $market): MarketResponse
+    public function getTickerMarket(string $market): MarketResponse
     {
         try {
             $response = $this->client->request('GET', 'markets/'.$market.'/ticker.'.$this->format);
