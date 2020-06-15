@@ -10,7 +10,7 @@ abstract class Response
     /** @var string */
     protected $status;
 
-    /** @var EntityContract */
+    /** @var EntityContract|array */
     protected $data;
 
     /**
@@ -36,7 +36,7 @@ abstract class Response
     /**
      * @return EntityContract
      */
-    public function data(): EntityContract
+    public function data(): ?EntityContract
     {
         return $this->data;
     }

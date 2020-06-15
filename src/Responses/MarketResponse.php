@@ -2,12 +2,12 @@
 
 namespace Bakle\Buda\Responses;
 
-use Bakle\Buda\Entities\Market;
+use Bakle\Buda\Entities\TickerMarket;
 
 class MarketResponse extends Response
 {
     protected function setData(string $data): void
     {
-        $this->data = $data !== '' ? new Market(json_decode($data)->ticker) : null;
+        $this->data = $data !== '' ? new TickerMarket(json_decode($data)->ticker) : null;
     }
 }

@@ -4,7 +4,7 @@ namespace Bakle\Buda\Entities;
 
 use Bakle\Buda\Contracts\EntityContract;
 
-class Market implements EntityContract
+class TickerMarket implements EntityContract
 {
     /** @var string */
     private $id;
@@ -28,7 +28,7 @@ class Market implements EntityContract
     private $priceVariation7Days;
 
     /**
-     * Market constructor.
+     * TickerMarket constructor.
      * @param object $data
      */
     public function __construct(object $data)
