@@ -33,10 +33,7 @@ abstract class Response
         return $this->status;
     }
 
-    /**
-     * @return EntityContract
-     */
-    public function data(): ?EntityContract
+    public function data()
     {
         return $this->data;
     }

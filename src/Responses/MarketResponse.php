@@ -2,12 +2,27 @@
 
 namespace Bakle\Buda\Responses;
 
-use Bakle\Buda\Entities\TickerMarket;
+use Bakle\Buda\Entities\Market;
 
 class MarketResponse extends Response
 {
     protected function setData(string $data): void
     {
-        $this->data = $data !== '' ? new TickerMarket(json_decode($data)->ticker) : null;
+        $decodedData = json_decode($data);
+
+        property_exists($decodedData, 'markets') ? $this->setMultipleMarkets($decodedData->markets)
+            : $this->setSingleMarket($decodedData->market);
+    }
+
+    private function setMultipleMarkets(array $markets): void
+    {
+        foreach ($markets as $market) {
+            $this->data[] = new Market($market);
+        }
+    }
+
+    private function setSingleMarket(object $market): void
+    {
+        $this->data = new Market($market);
     }
 }

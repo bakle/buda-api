@@ -4,8 +4,10 @@ namespace Bakle\Buda;
 
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Responses\MarketResponse;
+use Bakle\Buda\Responses\TickerMarketResponse;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 
 class Buda
 {
@@ -26,18 +28,45 @@ class Buda
         ]);
     }
 
+    public function getMarkets(): MarketResponse
+    {
+        try {
+            $response = $this->client->request('GET', 'markets.'.$this->format);
+
+            return new MarketResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
     /**
      * @param string $market
      * @return MarketResponse
      * @throws BudaException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
-    public function getTickerMarket(string $market): MarketResponse
+    public function getMarket(string $market): MarketResponse
+    {
+        try {
+            $response = $this->client->request('GET', 'markets/'.$market.'.'.$this->format);
+
+            return new MarketResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $market
+     * @return TickerMarketResponse
+     * @throws BudaException|GuzzleException
+     */
+    public function getTickerMarket(string $market): TickerMarketResponse
     {
         try {
             $response = $this->client->request('GET', 'markets/'.$market.'/ticker.'.$this->format);
 
-            return new MarketResponse($response->getStatusCode(), $response->getBody()->getContents());
+            return new TickerMarketResponse($response->getStatusCode(), $response->getBody()->getContents());
         } catch (ClientException $exception) {
             throw new BudaException($exception);
         }
