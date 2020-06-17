@@ -74,6 +74,11 @@ class BudaMock
         }
     }
 
+    /**
+     * @param string $market
+     * @return MarketVolumeResponse
+     * @throws BudaException
+     */
     public function getMarketVolume(string $market): MarketVolumeResponse
     {
         if ($market === 'fail-market') {

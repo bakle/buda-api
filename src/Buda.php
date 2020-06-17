@@ -29,6 +29,11 @@ class Buda
         ]);
     }
 
+    /**
+     * @return MarketResponse
+     * @throws BudaException
+     * @throws GuzzleException
+     */
     public function getMarkets(): MarketResponse
     {
         try {
