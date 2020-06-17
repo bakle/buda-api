@@ -4,6 +4,7 @@ namespace Bakle\Buda;
 
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Responses\MarketResponse;
+use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -51,6 +52,23 @@ class Buda
             $response = $this->client->request('GET', 'markets/'.$market.'.'.$this->format);
 
             return new MarketResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $market
+     * @return MarketVolumeResponse
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function getMarketVolume(string $market): MarketVolumeResponse
+    {
+        try {
+            $response = $this->client->request('GET', 'markets/'.$market.'/volume.'.$this->format);
+
+            return new MarketVolumeResponse($response->getStatusCode(), $response->getBody()->getContents());
         } catch (ClientException $exception) {
             throw new BudaException($exception);
         }

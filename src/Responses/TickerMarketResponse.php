@@ -6,6 +6,9 @@ use Bakle\Buda\Entities\TickerMarket;
 
 class TickerMarketResponse extends Response
 {
+    /**
+     * @param string $data
+     */
     protected function setData(string $data): void
     {
         $this->data = $data !== '' ? new TickerMarket(json_decode($data)->ticker) : null;

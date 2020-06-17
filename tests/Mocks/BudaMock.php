@@ -4,6 +4,7 @@ namespace Bakle\Buda\Tests\Mocks;
 
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Responses\MarketResponse;
+use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use GuzzleHttp\Exception\ClientException;
 
@@ -71,6 +72,37 @@ class BudaMock
         } catch (ClientException $exception) {
             throw new BudaException($exception);
         }
+    }
+
+    public function getMarketVolume(string $market): MarketVolumeResponse
+    {
+        if ($market === 'fail-market') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $data = '{
+                "volume": {
+                    "market_id": "BTC-COP",
+                    "bid_volume_24h": [
+                        "5.02389055",
+                        "BTC"
+                    ],
+                    "ask_volume_24h": [
+                        "4.40828336",
+                        "BTC"
+                    ],
+                    "bid_volume_7d": [
+                        "42.4818546",
+                        "BTC"
+                    ],
+                    "ask_volume_7d": [
+                        "45.6118442",
+                        "BTC"
+                    ]
+                }
+        }';
+
+        return new MarketVolumeResponse('200', $data);
     }
 
     /**

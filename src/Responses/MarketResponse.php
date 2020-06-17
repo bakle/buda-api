@@ -6,6 +6,9 @@ use Bakle\Buda\Entities\Market;
 
 class MarketResponse extends Response
 {
+    /**
+     * @param string $data
+     */
     protected function setData(string $data): void
     {
         $decodedData = json_decode($data);
@@ -14,6 +17,9 @@ class MarketResponse extends Response
             : $this->setSingleMarket($decodedData->market);
     }
 
+    /**
+     * @param array $markets
+     */
     private function setMultipleMarkets(array $markets): void
     {
         foreach ($markets as $market) {
@@ -21,6 +27,9 @@ class MarketResponse extends Response
         }
     }
 
+    /**
+     * @param object $market
+     */
     private function setSingleMarket(object $market): void
     {
         $this->data = new Market($market);
