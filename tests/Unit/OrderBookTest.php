@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 class OrderBookTest extends TestCase
 {
     /** @test */
-    public function itCanGetMarketVolume(): void
+    public function itCanGetOrdersBook(): void
     {
         $buda = new BudaMock();
 
@@ -21,7 +21,7 @@ class OrderBookTest extends TestCase
     }
 
     /** @test */
-    public function itFailsGettingMarketVolume(): void
+    public function itFailsGettingOrdersBook(): void
     {
         $this->expectException(BudaException::class);
 

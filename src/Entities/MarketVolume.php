@@ -43,7 +43,7 @@ class MarketVolume implements EntityContract
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function bidVolume24Hours(): array
     {
@@ -51,7 +51,7 @@ class MarketVolume implements EntityContract
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function askVolume24Hours(): array
     {
@@ -59,7 +59,7 @@ class MarketVolume implements EntityContract
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function bidVolume7Days(): array
     {
@@ -67,7 +67,7 @@ class MarketVolume implements EntityContract
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function askVolume7Days(): array
     {
