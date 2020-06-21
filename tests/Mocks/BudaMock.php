@@ -7,6 +7,7 @@ use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\OrderBookResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
+use Bakle\Buda\Responses\TradeResponse;
 use GuzzleHttp\Exception\ClientException;
 
 class BudaMock
@@ -142,5 +143,55 @@ class BudaMock
         $data = '{"order_book":{"market_id":"'.strtoupper($market).'","asks":[["836677.14", "0.447349"]],"bids":[["821580.0", "0.25667389"]]}}';
 
         return new OrderBookResponse('200', $data);
+    }
+
+    /**
+     * @param string $market
+     * @param int $limit
+     * @param int $timestamp
+     * @return TradeResponse
+     * @throws BudaException
+     */
+    public function getTrades(string $market, $limit = 50, int $timestamp = 0): TradeResponse
+    {
+        if ($market === 'fail-market') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $entries = '[
+            ["1592763501284","0.00035029","33969985.0","buy",1050379],
+            ["1592763085557","0.0062085","33542711.0","sell",1050370],
+            ["1592758811991","0.00287978","33969990.0","buy",1050350],
+            ["1592758175163","0.00906818","33542520.04","sell",1050346],
+            ["1592757480204","0.00013538","33542505.0","sell",1050338],
+            ["1592756746977","0.00055265","33971985.0","buy",1050333],
+            ["1592755514177","0.00008515","33542024.04","sell",1050317],
+            ["1592754923871","0.002559","33971985.0","buy",1050308],
+            ["1592752135629","0.01407347","33971985.0","buy",1050272],
+            ["1592752135629","0.00029695","33971984.0","buy",1050271]
+        ]';
+
+        if ($limit === 5) {
+            $entries = '[
+                ["1592763501284","0.00035029","33969985.0","buy",1050379],
+                ["1592763085557","0.0062085","33542711.0","sell",1050370],
+                ["1592758811991","0.00287978","33969990.0","buy",1050350],
+                ["1592758175163","0.00906818","33542520.04","sell",1050346],
+                ["1592757480204","0.00013538","33542505.0","sell",1050338]
+            ]';
+        }
+
+        $timestamp = $timestamp === 0 ? 'null' : $timestamp;
+
+        $data = '{
+            "trades":{
+                "market_id":"'.strtoupper($market).'",
+                "timestamp":'.$timestamp.',
+                "last_timestamp":"1592695826202",
+                "entries":'.$entries.'
+            }
+        }';
+
+        return new TradeResponse('200', $data);
     }
 }
