@@ -5,6 +5,7 @@ namespace Bakle\Buda\Tests\Mocks;
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
+use Bakle\Buda\Responses\OrderBookResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use GuzzleHttp\Exception\ClientException;
 
@@ -125,5 +126,21 @@ class BudaMock
         $data = '{"ticker":{"market_id":"'.$market.'","last_price":["0.02537093","BTC"],"min_ask":["0.02518027","BTC"],"max_bid":["0.02485485","BTC"],"volume":["0.0","ETH"],"price_variation_24h":"0.0","price_variation_7d":"0.003"}}';
 
         return new TickerMarketResponse('200', $data);
+    }
+
+    /**
+     * @param string $market
+     * @return OrderBookResponse
+     * @throws BudaException
+     */
+    public function getOrdersBook(string $market): OrderBookResponse
+    {
+        if ($market === 'fail-market') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $data = '{"order_book":{"market_id":"'.strtoupper($market).'","asks":[["836677.14", "0.447349"]],"bids":[["821580.0", "0.25667389"]]}}';
+
+        return new OrderBookResponse('200', $data);
     }
 }
