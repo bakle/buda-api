@@ -12,10 +12,17 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=7.3",
-        "guzzlehttp/guzzle": "^7.0@dev"
+        "guzzlehttp/guzzle": "^7.0@dev",
+        "ext-json": "*"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.17@dev"
+        "friendsofphp/php-cs-fixer": "^2.17@dev",
+        "phpunit/phpunit": "^9.3@dev"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bakle\\Buda\\Tests\\": "tests"
+        }
     },
     "autoload": {
         "psr-4": {

@@ -1,0 +1,32 @@
+<?php
+
+namespace Bakle\Buda\Tests\Unit;
+
+use Bakle\Buda\Exceptions\BudaException;
+use Bakle\Buda\Tests\Mocks\BudaMock;
+use PHPUnit\Framework\TestCase;
+
+class OrderBookTest extends TestCase
+{
+    /** @test */
+    public function itCanGetMarketVolume(): void
+    {
+        $buda = new BudaMock();
+
+        $response = $buda->getOrdersBook('btc-cop');
+
+        $this->assertEquals('BTC-COP', $response->data()->id());
+        $this->assertEquals([['836677.14', '0.447349']], $response->data()->asks());
+        $this->assertEquals([['821580.0', '0.25667389']], $response->data()->bids());
+    }
+
+    /** @test */
+    public function itFailsGettingMarketVolume(): void
+    {
+        $this->expectException(BudaException::class);
+
+        $buda = new BudaMock();
+
+        $buda->getOrdersBook('fail-market');
+    }
+}
