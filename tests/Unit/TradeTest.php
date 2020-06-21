@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 class TradeTest extends TestCase
 {
     /** @test */
-    public function itCanGetMarketVolumeWithDefaultParams(): void
+    public function itCanGetTradesWithDefaultParams(): void
     {
         $buda = new BudaMock();
 
@@ -21,7 +21,7 @@ class TradeTest extends TestCase
         $this->assertCount(10, $response->data()->entries());
     }
 
-    public function itCanGetMarketVolumeWithSpecificParams(): void
+    public function itCanGetTradesWithSpecificParams(): void
     {
         $buda = new BudaMock();
 
@@ -34,7 +34,7 @@ class TradeTest extends TestCase
     }
 
     /** @test */
-    public function itFailsGettingMarketVolume(): void
+    public function itFailsGettingMTrades(): void
     {
         $this->expectException(BudaException::class);
 
