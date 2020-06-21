@@ -2,7 +2,9 @@
 
 namespace Bakle\Buda\Tests\Mocks;
 
+use Bakle\Buda\Constants\TransactionTypes;
 use Bakle\Buda\Exceptions\BudaException;
+use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\OrderBookResponse;
@@ -193,5 +195,35 @@ class BudaMock
         }';
 
         return new TradeResponse('200', $data);
+    }
+
+    /**
+     * @param string $currency
+     * @param string $transactionType
+     * @return FeeResponse
+     * @throws BudaException
+     */
+    public function getFees(string $currency, string $transactionType): FeeResponse
+    {
+        if (! in_array($transactionType, [TransactionTypes::DEPOSIT, TransactionTypes::WITHDRAWAL])) {
+            throw new BudaException('Transaction type: '.$transactionType.' is not allowed!');
+        }
+
+        if ($currency === 'fail-currency') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $currency = strtoupper($currency);
+
+        $data = '{
+            "fee": {
+                "currency": "'.$currency.'",
+                "name": "'.$transactionType.'",
+                "percent": 0,
+                "base": ["4200.0","'.$currency.'"]
+            }
+        }';
+
+        return new FeeResponse('200', $data);
     }
 }

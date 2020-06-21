@@ -2,7 +2,9 @@
 
 namespace Bakle\Buda;
 
+use Bakle\Buda\Constants\TransactionTypes;
 use Bakle\Buda\Exceptions\BudaException;
+use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\OrderBookResponse;
@@ -139,6 +141,33 @@ class Buda
             ]);
 
             return new TradeResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $currency
+     * @param string $transactionType
+     * @return FeeResponse
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function getFees(string $currency, string $transactionType): FeeResponse
+    {
+        if (! in_array($transactionType, [TransactionTypes::DEPOSIT, TransactionTypes::WITHDRAWAL])) {
+            throw new BudaException('Transaction type: '.$transactionType.' is not allowed!');
+        }
+
+        try {
+            $response = $this->client->request(
+                'GET', 'currencies/'.$currency.'/fees/'.$transactionType.'.'.$this->format
+            );
+
+            $data = json_decode($response->getBody()->getContents());
+            $data->fee->currency = strtoupper($currency);
+
+            return new FeeResponse($response->getStatusCode(), json_encode($data));
         } catch (ClientException $exception) {
             throw new BudaException($exception);
         }
