@@ -4,11 +4,13 @@ namespace Bakle\Buda;
 
 use Bakle\Buda\Authenticator\Authenticator;
 use Bakle\Buda\Constants\TransactionTypes;
+use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\OrderBookResponse;
+use Bakle\Buda\Responses\OrderResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use Bakle\Buda\Responses\TradeResponse;
 use GuzzleHttp\Client;
@@ -181,6 +183,33 @@ class Buda
             $data->fee->currency = strtoupper($currency);
 
             return new FeeResponse($response->getStatusCode(), json_encode($data));
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $market
+     * @return FeeResponse
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function getOrders(string $market): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = $this->baseUrl.'markets/'.$market.'/orders.'.$this->format;
+
+            $this->authenticator->authenticate('GET', $path);
+
+            $response = $this->client->request('GET', 'markets/'.$market.'/orders.'.$this->format, [
+                'headers' => $this->authenticator->authenticationData(),
+            ]);
+
+            return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
         } catch (ClientException $exception) {
             throw new BudaException($exception);
         }

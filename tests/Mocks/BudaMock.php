@@ -3,17 +3,37 @@
 namespace Bakle\Buda\Tests\Mocks;
 
 use Bakle\Buda\Constants\TransactionTypes;
+use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\OrderBookResponse;
+use Bakle\Buda\Responses\OrderResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use Bakle\Buda\Responses\TradeResponse;
 use GuzzleHttp\Exception\ClientException;
 
 class BudaMock
 {
+    /** @var string */
+    private $format = 'json';
+
+    /** @var string */
+    private $baseUrl = '/api/v2/';
+
+    /** @var AuthenticatorMock */
+    private $authenticator;
+
+    /**
+     * @param string $apiKey
+     * @param string $secretKey
+     */
+    public function setCredentials(string $apiKey, string $secretKey): void
+    {
+        $this->authenticator = new AuthenticatorMock($apiKey, $secretKey);
+    }
+
     /**
      * @return MarketResponse
      * @throws BudaException
@@ -225,5 +245,44 @@ class BudaMock
         }';
 
         return new FeeResponse('200', $data);
+    }
+
+    public function getOrders(string $market): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($market === 'fail-market') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $path = $this->baseUrl.'markets/'.$market.'/orders.'.$this->format;
+
+        $this->authenticator->authenticate('GET', $path);
+
+        $data = '{
+                "orders":[
+                    {
+                        "id":31051262,
+                        "market_id":"BTC-COP",
+                        "account_id":152485,
+                        "type":"Ask",
+                        "state":"traded",
+                        "created_at":"2020-06-04T18:36:26.000Z",
+                        "fee_currency":"COP",
+                        "price_type":"limit",
+                        "source":null,
+                        "limit":["34598930.0","COP"],
+                        "amount":["0.0","BTC"],
+                        "original_amount":["0.02982682","BTC"],
+                        "traded_amount":["0.02982682","BTC"],
+                        "total_exchanged":["1031976.06","COP"],
+                        "paid_fee":["4127.9","COP"]
+                    }
+                ]
+            }';
+
+        return new OrderResponse('200', $data);
     }
 }
