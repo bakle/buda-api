@@ -2,6 +2,7 @@
 
 namespace Bakle\Buda;
 
+use Bakle\Buda\Authenticator\Authenticator;
 use Bakle\Buda\Constants\TransactionTypes;
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Responses\FeeResponse;
@@ -20,17 +21,29 @@ class Buda
     private $format = 'json';
 
     /** @var string */
-    private $baseUrl = 'https://www.buda.com/api/v2/';
+    private $baseUrl = '/api/v2/';
 
     /** @var Client */
     private $client;
 
+    /** @var Authenticator */
+    private $authenticator;
+
     public function __construct()
     {
         $this->client = new Client([
-            'base_uri' => $this->baseUrl,
+            'base_uri' => 'https://www.buda.com'.$this->baseUrl,
             'timeout' => 5,
         ]);
+    }
+
+    /**
+     * @param string $apiKey
+     * @param string $secretKey
+     */
+    public function setCredentials(string $apiKey, string $secretKey): void
+    {
+        $this->authenticator = new Authenticator($apiKey, $secretKey);
     }
 
     /**
