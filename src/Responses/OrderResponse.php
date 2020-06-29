@@ -19,6 +19,7 @@ class OrderResponse extends Response
      */
     private function setMultipleOrders(array $orders): void
     {
+        $this->data = [];
         foreach ($orders as $order) {
             $this->data[] = new Order($order);
         }

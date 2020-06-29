@@ -190,11 +190,13 @@ class Buda
 
     /**
      * @param string $market
-     * @return FeeResponse
+     * @param string $state
+     * @return OrderResponse
+     * @throws AuthenticationException
      * @throws BudaException
      * @throws GuzzleException
      */
-    public function getOrders(string $market): OrderResponse
+    public function getOrders(string $market, string $state = ''): OrderResponse
     {
         if (! $this->authenticator) {
             throw AuthenticationException::credentialsNotSet();
@@ -203,10 +205,18 @@ class Buda
         try {
             $path = $this->baseUrl.'markets/'.$market.'/orders.'.$this->format;
 
+            $query = [];
+
+            if ($state) {
+                $query['state'] = $state;
+                $path .= '?state='.$state;
+            }
+
             $this->authenticator->authenticate('GET', $path);
 
             $response = $this->client->request('GET', 'markets/'.$market.'/orders.'.$this->format, [
                 'headers' => $this->authenticator->authenticationData(),
+                'query' => $query,
             ]);
 
             return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());

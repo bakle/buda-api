@@ -247,7 +247,7 @@ class BudaMock
         return new FeeResponse('200', $data);
     }
 
-    public function getOrders(string $market): OrderResponse
+    public function getOrders(string $market, string $state = ''): OrderResponse
     {
         if (! $this->authenticator) {
             throw AuthenticationException::credentialsNotSet();
