@@ -6,6 +6,7 @@ use Bakle\Buda\Authenticator\Authenticator;
 use Bakle\Buda\Constants\TransactionTypes;
 use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
+use Bakle\Buda\Responses\BalanceResponse;
 use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
@@ -220,6 +221,42 @@ class Buda
             ]);
 
             return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $currency
+     * @return BalanceResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function getBalances(string $currency = ''): BalanceResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = 'balances';
+
+            if ($currency) {
+                $path .= '/'.$currency;
+            }
+
+            $path .= '.'.$this->format;
+
+            $this->authenticator->authenticate('GET', $this->baseUrl.$path);
+
+            $response = $this->client->request('GET', $path, [
+                'headers' => $this->authenticator->authenticationData(),
+            ]);
+            var_dump($response->getBody()->getContents());
+            die();
+
+            return new BalanceResponse($response->getStatusCode(), $response->getBody()->getContents());
         } catch (ClientException $exception) {
             throw new BudaException($exception);
         }

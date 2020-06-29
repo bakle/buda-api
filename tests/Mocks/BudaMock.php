@@ -5,6 +5,7 @@ namespace Bakle\Buda\Tests\Mocks;
 use Bakle\Buda\Constants\TransactionTypes;
 use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
+use Bakle\Buda\Responses\BalanceResponse;
 use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
@@ -247,6 +248,13 @@ class BudaMock
         return new FeeResponse('200', $data);
     }
 
+    /**
+     * @param string $market
+     * @param string $state
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
     public function getOrders(string $market, string $state = ''): OrderResponse
     {
         if (! $this->authenticator) {
@@ -284,5 +292,62 @@ class BudaMock
             }';
 
         return new OrderResponse('200', $data);
+    }
+
+    /**
+     * @param string $currency
+     * @return BalanceResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
+    public function getBalances(string $currency = ''): BalanceResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($currency === 'fail-currency') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $path = 'balances';
+
+        if ($currency) {
+            $path .= '/'.$currency;
+        }
+
+        $path .= '.'.$this->format;
+
+        $this->authenticator->authenticate('GET', $this->baseUrl.$path);
+
+        $data = '{
+            "balances":[
+                {
+                    "id":"BTC",
+                    "amount":["0.0","BTC"],
+                    "available_amount":["0.0","BTC"],
+                    "frozen_amount":["0.0","BTC"],
+                    "pending_withdraw_amount":["0.0","BTC"],
+                    "account_id":152485
+                }
+            ]
+        }';
+
+        if ($currency === 'cop') {
+            $data = '{
+                "balances":[
+                    {
+                        "id":"COP",
+                        "amount":["0.0","COP"],
+                        "available_amount":["0.0","COP"],
+                        "frozen_amount":["0.0","COP"],
+                        "pending_withdraw_amount":["0.0","COP"],
+                        "account_id":152485
+                    }
+                ]
+            }';
+        }
+
+        return new BalanceResponse('200', $data);
     }
 }
