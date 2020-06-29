@@ -11,7 +11,10 @@ class OrderResponse extends Response
      */
     protected function setData(string $data): void
     {
-        $this->setMultipleOrders(json_decode($data)->orders);
+        $decodeData = json_decode($data);
+
+        property_exists($decodeData, 'orders') ? $this->setMultipleOrders($decodeData->orders)
+            : $this->setOrder($decodeData->order);
     }
 
     /**
@@ -23,5 +26,14 @@ class OrderResponse extends Response
         foreach ($orders as $order) {
             $this->data[] = new Order($order);
         }
+    }
+
+    /**
+     * @param object $order
+     * @throws \Exception
+     */
+    private function setOrder(object $order): void
+    {
+        $this->data = new Order($order);
     }
 }

@@ -350,4 +350,41 @@ class BudaMock
 
         return new BalanceResponse('200', $data);
     }
+
+    public function getOrderDetail(string $orderId): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($orderId === 'fail-order') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $path = 'orders/'.$orderId.$this->format;
+
+        $this->authenticator->authenticate('GET', $path);
+
+        $data = '{
+                "order": {
+                        "id":555555,
+                        "market_id":"BTC-COP",
+                        "account_id":444444,
+                        "type":"Ask",
+                        "state":"traded",
+                        "created_at":"2020-06-04T18:36:26.000Z",
+                        "fee_currency":"COP",
+                        "price_type":"limit",
+                        "source":null,
+                        "limit":["34598930.0","COP"],
+                        "amount":["0.0","BTC"],
+                        "original_amount":["0.02982682","BTC"],
+                        "traded_amount":["0.02982682","BTC"],
+                        "total_exchanged":["1031976.06","COP"],
+                        "paid_fee":["4127.9","COP"]
+                    }                
+                }';
+
+        return new OrderResponse('200', $data);
+    }
 }
