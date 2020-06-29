@@ -351,6 +351,12 @@ class BudaMock
         return new BalanceResponse('200', $data);
     }
 
+    /**
+     * @param string $orderId
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
     public function getOrderDetail(string $orderId): OrderResponse
     {
         if (! $this->authenticator) {
@@ -386,5 +392,65 @@ class BudaMock
                 }';
 
         return new OrderResponse('200', $data);
+    }
+
+    /**
+     * @param string $market
+     * @param string $orderType
+     * @param string $priceType
+     * @param float $amount
+     * @param float|null $limit
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
+    public function newOrder(string $market, string $orderType, string $priceType, float $amount, ?float $limit = null): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($market === 'fail-market') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        try {
+            $path = 'markets/'.$market.'/orders';
+
+            $params = [];
+            $params['type'] = $orderType;
+            $params['price_type'] = $priceType;
+            if ($limit) {
+                $params['limit'] = $limit;
+            }
+
+            $params['amount'] = $amount;
+
+            $this->authenticator->authenticate('POST', $this->baseUrl.$path, $params);
+
+            $data = '{
+                "order":{
+                    "id":999999,
+                    "market_id":"BTC-COP",
+                    "account_id":888888,
+                    "type":"Bid",
+                    "state":"received",
+                    "created_at":"2020-06-29T16:30:52.821Z",
+                    "fee_currency":"BTC",
+                    "price_type":"limit",
+                    "source":null,
+                    "limit":["100.0","COP"],
+                    "amount":["0.0001","BTC"],
+                    "original_amount":["0.0001","BTC"],
+                    "traded_amount":["0.0","BTC"],
+                    "total_exchanged":["0.0","COP"],
+                    "paid_fee":["0.0","BTC"]
+                }
+            }';
+
+            return new OrderResponse('200', $data);
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
     }
 }

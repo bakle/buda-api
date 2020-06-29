@@ -287,4 +287,45 @@ class Buda
             throw new BudaException($exception);
         }
     }
+
+    /**
+     * @param string $market
+     * @param string $orderType
+     * @param string $priceType
+     * @param float $amount
+     * @param float|null $limit
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function newOrder(string $market, string $orderType, string $priceType, float $amount, ?float $limit = null): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = 'markets/'.$market.'/orders';
+
+            $params = [];
+            $params['type'] = $orderType;
+            $params['price_type'] = $priceType;
+            if ($limit) {
+                $params['limit'] = $limit;
+            }
+            $params['amount'] = $amount;
+
+            $this->authenticator->authenticate('POST', $this->baseUrl.$path, $params);
+
+            $response = $this->client->request('POST', $path, [
+                'headers' => $this->authenticator->authenticationData(),
+                'json' => $params,
+            ]);
+
+            return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
 }
