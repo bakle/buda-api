@@ -328,4 +328,37 @@ class Buda
             throw new BudaException($exception);
         }
     }
+
+    /**
+     * @param string $orderId
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function cancelOrder(string $orderId): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = 'orders/'.$orderId;
+
+            $params = [
+                'state' => 'canceling',
+            ];
+
+            $this->authenticator->authenticate('PUT', $this->baseUrl.$path, $params);
+
+            $response = $this->client->request('PUT', $path, [
+                'headers' => $this->authenticator->authenticationData(),
+                'json' => $params,
+            ]);
+
+            return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
 }

@@ -7,7 +7,7 @@ use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Tests\Mocks\BudaMock;
 use PHPUnit\Framework\TestCase;
 
-class NewOrderTest extends TestCase
+class CancelOrderTest extends TestCase
 {
     /** @var string */
     private $apiKey;
@@ -24,17 +24,17 @@ class NewOrderTest extends TestCase
     }
 
     /** @test */
-    public function itCanPlaceANewOrder(): void
+    public function itCanCancelAnOrder(): void
     {
         $buda = new BudaMock();
         $buda->setCredentials($this->apiKey, $this->secretKey);
-        $response = $buda->newOrder('btc-cop', 'Bid', 'limit', '0.0001', '100');
+        $response = $buda->cancelOrder('999999');
 
         $this->assertEquals('999999', $response->data()->id());
         $this->assertEquals('BTC-COP', $response->data()->marketId());
         $this->assertEquals('888888', $response->data()->accountId());
         $this->assertEquals('Bid', $response->data()->type());
-        $this->assertEquals('received', $response->data()->state());
+        $this->assertEquals('canceling', $response->data()->state());
         $this->assertEquals('2020-06-29 16:30:52', $response->data()->createdAt()->format('Y-m-d H:i:s'));
         $this->assertEquals('BTC', $response->data()->feeCurrency());
         $this->assertEquals('limit', $response->data()->priceType());
@@ -48,23 +48,23 @@ class NewOrderTest extends TestCase
     }
 
     /** @test */
-    public function itFailsPlacingANewOrderIfUnauthenticated(): void
+    public function itFailsCancelingAnOrderIfUnauthenticated(): void
     {
         $this->expectException(AuthenticationException::class);
 
         $buda = new BudaMock();
 
-        $buda->newOrder('btc-cop', 'Bid', 'limit', '0.0001', '100');
+        $buda->cancelOrder('999999');
     }
 
     /** @test */
-    public function itFailsPlacingANewOrder(): void
+    public function itFailsCancelingAnOrder(): void
     {
         $this->expectException(BudaException::class);
 
         $buda = new BudaMock();
         $buda->setCredentials($this->apiKey, $this->secretKey);
 
-        $buda->newOrder('fail-market', 'Bid', 'limit', '0.0001', '100');
+        $buda->cancelOrder('fail-order');
     }
 }
