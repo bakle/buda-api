@@ -3,17 +3,38 @@
 namespace Bakle\Buda\Tests\Mocks;
 
 use Bakle\Buda\Constants\TransactionTypes;
+use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
+use Bakle\Buda\Responses\BalanceResponse;
 use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\OrderBookResponse;
+use Bakle\Buda\Responses\OrderResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use Bakle\Buda\Responses\TradeResponse;
 use GuzzleHttp\Exception\ClientException;
 
 class BudaMock
 {
+    /** @var string */
+    private $format = 'json';
+
+    /** @var string */
+    private $baseUrl = '/api/v2/';
+
+    /** @var AuthenticatorMock */
+    private $authenticator;
+
+    /**
+     * @param string $apiKey
+     * @param string $secretKey
+     */
+    public function setCredentials(string $apiKey, string $secretKey): void
+    {
+        $this->authenticator = new AuthenticatorMock($apiKey, $secretKey);
+    }
+
     /**
      * @return MarketResponse
      * @throws BudaException
@@ -225,5 +246,257 @@ class BudaMock
         }';
 
         return new FeeResponse('200', $data);
+    }
+
+    /**
+     * @param string $market
+     * @param string $state
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
+    public function getOrders(string $market, string $state = ''): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($market === 'fail-market') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $path = $this->baseUrl.'markets/'.$market.'/orders.'.$this->format;
+
+        $this->authenticator->authenticate('GET', $path);
+
+        $data = '{
+                "orders":[
+                    {
+                        "id":31051262,
+                        "market_id":"BTC-COP",
+                        "account_id":152485,
+                        "type":"Ask",
+                        "state":"traded",
+                        "created_at":"2020-06-04T18:36:26.000Z",
+                        "fee_currency":"COP",
+                        "price_type":"limit",
+                        "source":null,
+                        "limit":["34598930.0","COP"],
+                        "amount":["0.0","BTC"],
+                        "original_amount":["0.02982682","BTC"],
+                        "traded_amount":["0.02982682","BTC"],
+                        "total_exchanged":["1031976.06","COP"],
+                        "paid_fee":["4127.9","COP"]
+                    }
+                ]
+            }';
+
+        return new OrderResponse('200', $data);
+    }
+
+    /**
+     * @param string $currency
+     * @return BalanceResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
+    public function getBalances(string $currency = ''): BalanceResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($currency === 'fail-currency') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $path = 'balances';
+
+        if ($currency) {
+            $path .= '/'.$currency;
+        }
+
+        $path .= '.'.$this->format;
+
+        $this->authenticator->authenticate('GET', $this->baseUrl.$path);
+
+        $data = '{
+            "balances":[
+                {
+                    "id":"BTC",
+                    "amount":["0.0","BTC"],
+                    "available_amount":["0.0","BTC"],
+                    "frozen_amount":["0.0","BTC"],
+                    "pending_withdraw_amount":["0.0","BTC"],
+                    "account_id":152485
+                }
+            ]
+        }';
+
+        if ($currency === 'cop') {
+            $data = '{
+                "balances":[
+                    {
+                        "id":"COP",
+                        "amount":["0.0","COP"],
+                        "available_amount":["0.0","COP"],
+                        "frozen_amount":["0.0","COP"],
+                        "pending_withdraw_amount":["0.0","COP"],
+                        "account_id":152485
+                    }
+                ]
+            }';
+        }
+
+        return new BalanceResponse('200', $data);
+    }
+
+    /**
+     * @param string $orderId
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
+    public function getOrderDetail(string $orderId): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($orderId === 'fail-order') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $path = 'orders/'.$orderId.$this->format;
+
+        $this->authenticator->authenticate('GET', $path);
+
+        $data = '{
+                "order": {
+                        "id":555555,
+                        "market_id":"BTC-COP",
+                        "account_id":444444,
+                        "type":"Ask",
+                        "state":"traded",
+                        "created_at":"2020-06-04T18:36:26.000Z",
+                        "fee_currency":"COP",
+                        "price_type":"limit",
+                        "source":null,
+                        "limit":["34598930.0","COP"],
+                        "amount":["0.0","BTC"],
+                        "original_amount":["0.02982682","BTC"],
+                        "traded_amount":["0.02982682","BTC"],
+                        "total_exchanged":["1031976.06","COP"],
+                        "paid_fee":["4127.9","COP"]
+                    }                
+                }';
+
+        return new OrderResponse('200', $data);
+    }
+
+    /**
+     * @param string $market
+     * @param string $orderType
+     * @param string $priceType
+     * @param float $amount
+     * @param float|null $limit
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     */
+    public function newOrder(string $market, string $orderType, string $priceType, float $amount, ?float $limit = null): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($market === 'fail-market') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        try {
+            $path = 'markets/'.$market.'/orders';
+
+            $params = [];
+            $params['type'] = $orderType;
+            $params['price_type'] = $priceType;
+            if ($limit) {
+                $params['limit'] = $limit;
+            }
+
+            $params['amount'] = $amount;
+
+            $this->authenticator->authenticate('POST', $this->baseUrl.$path, $params);
+
+            $data = '{
+                "order":{
+                    "id":999999,
+                    "market_id":"BTC-COP",
+                    "account_id":888888,
+                    "type":"Bid",
+                    "state":"received",
+                    "created_at":"2020-06-29T16:30:52.821Z",
+                    "fee_currency":"BTC",
+                    "price_type":"limit",
+                    "source":null,
+                    "limit":["100.0","COP"],
+                    "amount":["0.0001","BTC"],
+                    "original_amount":["0.0001","BTC"],
+                    "traded_amount":["0.0","BTC"],
+                    "total_exchanged":["0.0","COP"],
+                    "paid_fee":["0.0","BTC"]
+                }
+            }';
+
+            return new OrderResponse('200', $data);
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $orderId
+     * @return OrderResponse
+     * @throws AuthenticationException
+     */
+    public function cancelOrder(string $orderId): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        if ($orderId === 'fail-order') {
+            throw new BudaException('{"message":"Not found","code":"not_found"}');
+        }
+
+        $path = 'orders/'.$orderId;
+
+        $params = [
+            'state' => 'canceling',
+        ];
+
+        $this->authenticator->authenticate('PUT', $this->baseUrl.$path, $params);
+
+        $data = '{
+                "order":{
+                    "id":999999,
+                    "market_id":"BTC-COP",
+                    "account_id":888888,
+                    "type":"Bid",
+                    "state":"canceling",
+                    "created_at":"2020-06-29T16:30:52.821Z",
+                    "fee_currency":"BTC",
+                    "price_type":"limit",
+                    "source":null,
+                    "limit":["100.0","COP"],
+                    "amount":["0.0001","BTC"],
+                    "original_amount":["0.0001","BTC"],
+                    "traded_amount":["0.0","BTC"],
+                    "total_exchanged":["0.0","COP"],
+                    "paid_fee":["0.0","BTC"]
+                }
+            }';
+
+        return new OrderResponse('200', $data);
     }
 }

@@ -4,11 +4,14 @@ namespace Bakle\Buda;
 
 use Bakle\Buda\Authenticator\Authenticator;
 use Bakle\Buda\Constants\TransactionTypes;
+use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
+use Bakle\Buda\Responses\BalanceResponse;
 use Bakle\Buda\Responses\FeeResponse;
 use Bakle\Buda\Responses\MarketResponse;
 use Bakle\Buda\Responses\MarketVolumeResponse;
 use Bakle\Buda\Responses\OrderBookResponse;
+use Bakle\Buda\Responses\OrderResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use Bakle\Buda\Responses\TradeResponse;
 use GuzzleHttp\Client;
@@ -181,6 +184,179 @@ class Buda
             $data->fee->currency = strtoupper($currency);
 
             return new FeeResponse($response->getStatusCode(), json_encode($data));
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $market
+     * @param string $state
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function getOrders(string $market, string $state = ''): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = $this->baseUrl.'markets/'.$market.'/orders.'.$this->format;
+
+            $query = [];
+
+            if ($state) {
+                $query['state'] = $state;
+                $path .= '?state='.$state;
+            }
+
+            $this->authenticator->authenticate('GET', $path);
+
+            $response = $this->client->request('GET', 'markets/'.$market.'/orders.'.$this->format, [
+                'headers' => $this->authenticator->authenticationData(),
+                'query' => $query,
+            ]);
+
+            return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $currency
+     * @return BalanceResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function getBalances(string $currency = ''): BalanceResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = 'balances';
+
+            if ($currency) {
+                $path .= '/'.$currency;
+            }
+
+            $path .= '.'.$this->format;
+
+            $this->authenticator->authenticate('GET', $this->baseUrl.$path);
+
+            $response = $this->client->request('GET', $path, [
+                'headers' => $this->authenticator->authenticationData(),
+            ]);
+
+            return new BalanceResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $orderId
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function getOrderDetail(string $orderId): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = 'orders/'.$orderId.$this->format;
+
+            $this->authenticator->authenticate('GET', $this->baseUrl.$path);
+
+            $response = $this->client->request('GET', $path, [
+                'headers' => $this->authenticator->authenticationData(),
+            ]);
+
+            return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $market
+     * @param string $orderType
+     * @param string $priceType
+     * @param float $amount
+     * @param float|null $limit
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function newOrder(string $market, string $orderType, string $priceType, float $amount, ?float $limit = null): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = 'markets/'.$market.'/orders';
+
+            $params = [];
+            $params['type'] = $orderType;
+            $params['price_type'] = $priceType;
+            if ($limit) {
+                $params['limit'] = $limit;
+            }
+            $params['amount'] = $amount;
+
+            $this->authenticator->authenticate('POST', $this->baseUrl.$path, $params);
+
+            $response = $this->client->request('POST', $path, [
+                'headers' => $this->authenticator->authenticationData(),
+                'json' => $params,
+            ]);
+
+            return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
+        } catch (ClientException $exception) {
+            throw new BudaException($exception);
+        }
+    }
+
+    /**
+     * @param string $orderId
+     * @return OrderResponse
+     * @throws AuthenticationException
+     * @throws BudaException
+     * @throws GuzzleException
+     */
+    public function cancelOrder(string $orderId): OrderResponse
+    {
+        if (! $this->authenticator) {
+            throw AuthenticationException::credentialsNotSet();
+        }
+
+        try {
+            $path = 'orders/'.$orderId;
+
+            $params = [
+                'state' => 'canceling',
+            ];
+
+            $this->authenticator->authenticate('PUT', $this->baseUrl.$path, $params);
+
+            $response = $this->client->request('PUT', $path, [
+                'headers' => $this->authenticator->authenticationData(),
+                'json' => $params,
+            ]);
+
+            return new OrderResponse($response->getStatusCode(), $response->getBody()->getContents());
         } catch (ClientException $exception) {
             throw new BudaException($exception);
         }
