@@ -13,6 +13,7 @@ use Bakle\Buda\Responses\OrderBookResponse;
 use Bakle\Buda\Responses\OrderResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use Bakle\Buda\Responses\TradeResponse;
+use Bakle\Buda\Validators\MarketValidator;
 use GuzzleHttp\Exception\ClientException;
 
 class BudaMock
@@ -79,6 +80,8 @@ class BudaMock
      */
     public function getMarket(string $market): MarketResponse
     {
+        MarketValidator::validate($market);
+
         try {
             $data = '{
             "market":
@@ -106,9 +109,7 @@ class BudaMock
      */
     public function getMarketVolume(string $market): MarketVolumeResponse
     {
-        if ($market === 'fail-market') {
-            throw new BudaException('{"message":"Not found","code":"not_found"}');
-        }
+        MarketValidator::validate($market);
 
         $data = '{
                 "volume": {
@@ -142,9 +143,7 @@ class BudaMock
      */
     public function getTickerMarket(string $market): TickerMarketResponse
     {
-        if ($market === 'fail-market') {
-            throw new BudaException('{"message":"Not found","code":"not_found"}');
-        }
+        MarketValidator::validate($market);
 
         $market = strtoupper($market);
         $data = '{"ticker":{"market_id":"'.$market.'","last_price":["0.02537093","BTC"],"min_ask":["0.02518027","BTC"],"max_bid":["0.02485485","BTC"],"volume":["0.0","ETH"],"price_variation_24h":"0.0","price_variation_7d":"0.003"}}';
@@ -159,9 +158,7 @@ class BudaMock
      */
     public function getOrdersBook(string $market): OrderBookResponse
     {
-        if ($market === 'fail-market') {
-            throw new BudaException('{"message":"Not found","code":"not_found"}');
-        }
+        MarketValidator::validate($market);
 
         $data = '{"order_book":{"market_id":"'.strtoupper($market).'","asks":[["836677.14", "0.447349"]],"bids":[["821580.0", "0.25667389"]]}}';
 
@@ -177,9 +174,7 @@ class BudaMock
      */
     public function getTrades(string $market, $limit = 50, int $timestamp = 0): TradeResponse
     {
-        if ($market === 'fail-market') {
-            throw new BudaException('{"message":"Not found","code":"not_found"}');
-        }
+        MarketValidator::validate($market);
 
         $entries = '[
             ["1592763501284","0.00035029","33969985.0","buy",1050379],
@@ -257,12 +252,10 @@ class BudaMock
      */
     public function getOrders(string $market, string $state = ''): OrderResponse
     {
+        MarketValidator::validate($market);
+
         if (! $this->authenticator) {
             throw AuthenticationException::credentialsNotSet();
-        }
-
-        if ($market === 'fail-market') {
-            throw new BudaException('{"message":"Not found","code":"not_found"}');
         }
 
         $path = $this->baseUrl.'markets/'.$market.'/orders.'.$this->format;
@@ -406,12 +399,10 @@ class BudaMock
      */
     public function newOrder(string $market, string $orderType, string $priceType, float $amount, ?float $limit = null): OrderResponse
     {
+        MarketValidator::validate($market);
+
         if (! $this->authenticator) {
             throw AuthenticationException::credentialsNotSet();
-        }
-
-        if ($market === 'fail-market') {
-            throw new BudaException('{"message":"Not found","code":"not_found"}');
         }
 
         try {

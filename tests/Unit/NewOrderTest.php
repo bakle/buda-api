@@ -2,6 +2,7 @@
 
 namespace Bakle\Buda\Tests\Unit;
 
+use Bakle\Buda\Constants\ResponseStatuses;
 use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Tests\Mocks\BudaMock;
@@ -60,10 +61,11 @@ class NewOrderTest extends TestCase
     /** @test */
     public function itFailsPlacingANewOrder(): void
     {
-        $this->expectException(BudaException::class);
-
         $buda = new BudaMock();
         $buda->setCredentials($this->apiKey, $this->secretKey);
+
+        $this->expectException(BudaException::class);
+        $this->expectExceptionCode(ResponseStatuses::STATUS_CODES[ResponseStatuses::UNPROCESSABLE_ENTITY]);
 
         $buda->newOrder('fail-market', 'Bid', 'limit', '0.0001', '100');
     }

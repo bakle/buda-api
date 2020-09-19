@@ -14,6 +14,7 @@ use Bakle\Buda\Responses\OrderBookResponse;
 use Bakle\Buda\Responses\OrderResponse;
 use Bakle\Buda\Responses\TickerMarketResponse;
 use Bakle\Buda\Responses\TradeResponse;
+use Bakle\Buda\Validators\MarketValidator;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -73,6 +74,8 @@ class Buda
      */
     public function getMarket(string $market): MarketResponse
     {
+        MarketValidator::validate($market);
+
         try {
             $response = $this->client->request('GET', 'markets/'.$market.'.'.$this->format);
 
@@ -90,6 +93,8 @@ class Buda
      */
     public function getMarketVolume(string $market): MarketVolumeResponse
     {
+        MarketValidator::validate($market);
+
         try {
             $response = $this->client->request('GET', 'markets/'.$market.'/volume.'.$this->format);
 
@@ -106,6 +111,8 @@ class Buda
      */
     public function getTickerMarket(string $market): TickerMarketResponse
     {
+        MarketValidator::validate($market);
+
         try {
             $response = $this->client->request('GET', 'markets/'.$market.'/ticker.'.$this->format);
 
@@ -123,6 +130,8 @@ class Buda
      */
     public function getOrdersBook(string $market): OrderBookResponse
     {
+        MarketValidator::validate($market);
+
         try {
             $response = $this->client->request('GET', 'markets/'.$market.'/order_book.'.$this->format);
 
@@ -145,6 +154,8 @@ class Buda
      */
     public function getTrades(string $market, $limit = 50, int $timestamp = 0): TradeResponse
     {
+        MarketValidator::validate($market);
+
         try {
             $body['limit'] = $limit;
 
@@ -199,6 +210,8 @@ class Buda
      */
     public function getOrders(string $market, string $state = ''): OrderResponse
     {
+        MarketValidator::validate($market);
+
         if (! $this->authenticator) {
             throw AuthenticationException::credentialsNotSet();
         }
@@ -301,6 +314,8 @@ class Buda
      */
     public function newOrder(string $market, string $orderType, string $priceType, float $amount, ?float $limit = null): OrderResponse
     {
+        MarketValidator::validate($market);
+
         if (! $this->authenticator) {
             throw AuthenticationException::credentialsNotSet();
         }

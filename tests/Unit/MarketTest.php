@@ -2,6 +2,8 @@
 
 namespace Bakle\Buda\Tests\Unit;
 
+use Bakle\Buda\Constants\ResponseStatuses;
+use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Tests\Mocks\BudaMock;
 use PHPUnit\Framework\TestCase;
 
@@ -39,5 +41,16 @@ class MarketTest extends TestCase
         $this->assertEquals(['0.00002', 'BTC'], $response->data()->minimumOrderAmount());
         $this->assertFalse($response->data()->disabled());
         $this->assertFalse($response->data()->illiquid());
+    }
+
+    /** @test */
+    public function itFailsWithNonExistentMarket(): void
+    {
+        $buda = new BudaMock();
+
+        $this->expectException(BudaException::class);
+        $this->expectExceptionCode(ResponseStatuses::STATUS_CODES[ResponseStatuses::UNPROCESSABLE_ENTITY]);
+
+        $buda->getMarket('btc-usd');
     }
 }

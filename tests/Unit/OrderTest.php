@@ -2,6 +2,7 @@
 
 namespace Bakle\Buda\Tests\Unit;
 
+use Bakle\Buda\Constants\ResponseStatuses;
 use Bakle\Buda\Exceptions\AuthenticationException;
 use Bakle\Buda\Exceptions\BudaException;
 use Bakle\Buda\Tests\Mocks\BudaMock;
@@ -19,8 +20,8 @@ class OrderTest extends TestCase
     {
         parent::setUp();
 
-        $this->apiKey = '1dbffe5b28c6092a51dacbfe33b47090';
-        $this->secretKey = 'xUsEUx4bwREPVIVwJZyaHAHeU+PYso3ZpqvRpcmb';
+        $this->apiKey = 'api-test';
+        $this->secretKey = 'secret-test';
     }
 
     /** @test */
@@ -61,10 +62,11 @@ class OrderTest extends TestCase
     /** @test */
     public function itFailsGettingOrders(): void
     {
-        $this->expectException(BudaException::class);
-
         $buda = new BudaMock();
         $buda->setCredentials($this->apiKey, $this->secretKey);
+
+        $this->expectException(BudaException::class);
+        $this->expectExceptionCode(ResponseStatuses::STATUS_CODES[ResponseStatuses::UNPROCESSABLE_ENTITY]);
 
         $buda->getOrders('fail-market');
     }
