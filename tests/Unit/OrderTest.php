@@ -19,8 +19,8 @@ class OrderTest extends TestCase
     {
         parent::setUp();
 
-        $this->apiKey = '1dbffe5b28c6092a51dacbfe33b47090';
-        $this->secretKey = 'xUsEUx4bwREPVIVwJZyaHAHeU+PYso3ZpqvRpcmb';
+        $this->apiKey = 'api-test';
+        $this->secretKey = 'secret-test';
     }
 
     /** @test */
